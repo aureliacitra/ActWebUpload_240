@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload File</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --border: #1e1e2e;
+      --accent: #7c6aff;
+      --accent2: #ff6a9d;
+      --text: #f0eeff;
+      --muted: #6b6880;
+      --success: #4dffa0;
+      --error: #ff6a6a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(124,106,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,106,255,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      animation: gridDrift 20s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes gridDrift {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(48px); }
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      animation: orb-float 8s ease-in-out infinite;
+    }
+    .orb-1 { width: 400px; height: 400px; background: rgba(124,106,255,0.12); top: -100px; left: -100px; }
+    .orb-2 { width: 300px; height: 300px; background: rgba(255,106,157,0.08); bottom: -80px; right: -80px; animation-delay: -4s; }
+
+    @keyframes orb-float {
+      0%, 100% { transform: translate(0,0); }
+      50% { transform: translate(20px, 20px); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 480px;
+      padding: 1.5rem;
+    }
+
+    .header {
+      margin-bottom: 2rem;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .header-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-tag::before {
+      content: '';
+      width: 20px;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    h1 {
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+
+    h1 span {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 0.5rem;
+      font-weight: 400;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      animation: fadeUp 0.6s 0.1s ease both;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.4;
+    }
+
+    .drop-zone {
+      border: 1.5px dashed var(--border);
+      border-radius: 14px;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      background: rgba(124,106,255,0.02);
+      margin-bottom: 1.25rem;
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--accent);
+      background: rgba(124,106,255,0.07);
+      transform: scale(1.01);
+    }
+
+    .dz-icon {
+      width: 56px; height: 56px;
+      margin: 0 auto 1rem;
+      background: linear-gradient(135deg, rgba(124,106,255,0.2), rgba(255,106,157,0.15));
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      border: 1px solid rgba(124,106,255,0.2);
+    }
+
+    .dz-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .dz-sub {
+      font-size: 12px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+    }
+
+    .browse-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 14px;
+      padding: 7px 18px;
+      border: 1px solid rgba(124,106,255,0.4);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: 'Syne', sans-serif;
+      color: var(--accent);
+      cursor: pointer;
+      background: rgba(124,106,255,0.08);
+      transition: all 0.2s;
+      font-weight: 600;
+    }
+
+    .browse-btn:hover {
+      background: rgba(124,106,255,0.18);
+      border-color: var(--accent);
+    }
+
+    input[type=file] { display: none; }
+
+    .file-preview {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      background: rgba(124,106,255,0.07);
+      border: 1px solid rgba(124,106,255,0.2);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 1.25rem;
+      font-size: 13px;
+    }
+
+    .file-preview-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .file-preview-info { flex: 1; min-width: 0; }
+    .file-preview-name { font-weight: 600; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-preview-size { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 2px; }
+
+    .file-preview-clear {
+      width: 24px; height: 24px;
+      border-radius: 6px;
+      background: rgba(255,106,106,0.1);
+      border: 1px solid rgba(255,106,106,0.2);
+      color: var(--error);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    .file-preview-clear:hover { background: rgba(255,106,106,0.2); }
+
+    .btn-submit {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, var(--accent), #9b6aff);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Syne', sans-serif;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: all 0.2s;
+    }
+
+    .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(124,106,255,0.35); }
+    .btn-submit:active { transform: translateY(0); }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 1rem;
+      justify-content: center;
+    }
+
+    .badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.04);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      letter-spacing: 0.05em;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 1.2rem;
+      font-size: 13px;
+      color: var(--muted);
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .footer a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .footer a:hover { color: var(--accent2); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="container">
+    <div class="header">
+      <div class="header-tag">Web Upload</div>
+      <h1>Unggah<br><span>File-mu.</span></h1>
+      <p class="subtitle">Seret, lepas, dan unggah dengan mudah.</p>
+    </div>
+
+    <div class="card">
+      <form action="upload.php" method="post" enctype="multipart/form-data">
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+          <div class="dz-icon">📁</div>
+          <p class="dz-title">Seret &amp; lepas file di sini</p>
+          <p class="dz-sub">atau pilih dari perangkat</p>
+          <label class="browse-btn" onclick="event.stopPropagation()">
+            ＋ Pilih File
+            <input type="file" name="fileToUpload" id="fileInput" onchange="showPreview(this)">
+          </label>
+        </div>
+
+        <div class="file-preview" id="preview">
+          <div class="file-preview-icon">📄</div>
+          <div class="file-preview-info">
+            <div class="file-preview-name" id="fname">—</div>
+            <div class="file-preview-size" id="fsize"></div>
+          </div>
+          <div class="file-preview-clear" onclick="clearFile()">✕</div>
+        </div>
+
+        <button type="submit" name="submit" class="btn-submit">⬆ Unggah Sekarang</button>
+      </form>
+
+      <div class="badges">
+        <span class="badge">MAX 500KB</span>
+        <span class="badge">JPG</span>
+        <span class="badge">PNG</span>
+        <span class="badge">JPEG</span>
+        <span class="badge">GIF</span>
+      </div>
+    </div>
+
+    <p class="footer">
+      Sudah punya file? <a href="upload.php">Lihat semua file →</a>
+    </p>
+  </div>
+
+  <script>
+    function showPreview(input) {
+      if (!input.files.length) return;
+      const f = input.files[0];
+      document.getElementById('fname').textContent = f.name;
+      document.getElementById('fsize').textContent = (f.size / 1024).toFixed(1) + ' KB';
+      document.getElementById('preview').style.display = 'flex';
+    }
+
+    function clearFile() {
+      document.getElementById('fileInput').value = '';
+      document.getElementById('preview').style.display = 'none';
+    }
+
+    const dz = document.getElementById('dropZone');
+    dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+    dz.addEventListener('drop', e => {
+      e.preventDefault();
+      dz.classList.remove('dragover');
+      if (e.dataTransfer.files.length) showPreview({ files: e.dataTransfer.files });
+    });
+  </script>
+</body>
+</html>
